@@ -21,7 +21,6 @@ try:
 except:
     TOKEN = os.getenv("GITHUB_TOKEN")
 
-TOKEN = os.getenv("GITHUB_TOKEN")
 HEADERS = {
     "Authorization": f"token {TOKEN}",
     "Accept": "application/vnd.github.v3+json",
@@ -39,10 +38,8 @@ DAYS = 90
 def _get(url: str, params: dict | None = None) -> requests.Response | None:
     """GET with rate-limit awareness. Returns None on rate limit exhaustion."""
     resp = requests.get(url, headers=HEADERS, params=params)
+
     
-    if resp.status_code != 200:
-        st.warning(f"GitHub API returned {resp.status_code}: {resp.text[:200]}")
-        return None
 
     if resp.status_code == 403 and "rate limit" in resp.text.lower():
         reset = int(resp.headers.get("X-RateLimit-Reset", 0))
@@ -53,6 +50,7 @@ def _get(url: str, params: dict | None = None) -> requests.Response | None:
         time.sleep(max(wait, 1))
         resp = requests.get(url, headers=HEADERS, params=params)
     if resp.status_code != 200:
+        st.warning(f"GitHub API returned {resp.status_code}: {resp.text[:200]}")
         return None
     return resp
 
