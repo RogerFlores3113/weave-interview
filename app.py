@@ -231,103 +231,7 @@ fig_radar.update_layout(
     height=450,
     margin=dict(t=30, b=30),
 )
-st.plotly_chart(fig_radar, use_container_width=True)
-
-# -- Scatter: PRs vs log(lines changed) --
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("PRs vs Code Volume")
-    fig_scatter = px.scatter(
-        author_stats,
-        x="total_lines",
-        y="num_prs",
-        color="author",
-        hover_name="author",
-        hover_data={"weighted_volume": ":.1f", "total_lines": ":,"},
-        log_x=True,
-        labels={
-            "total_lines": "Lines Changed (log scale)",
-            "num_prs": "Merged PRs",
-        },
-    )
-    fig_scatter.update_layout(height=400, showlegend=False)
-    fig_scatter.update_traces(marker=dict(size=8))
-    st.plotly_chart(fig_scatter, use_container_width=True)
-
-# -- Review activity bar chart --
-with col2:
-    st.subheader("Review Activity (Top 15)")
-    top_reviewers = author_stats.nlargest(15, "review_score")
-    fig_reviews = px.bar(
-        top_reviewers,
-        x="review_score",
-        y="author",
-        orientation="h",
-        color="review_ratio",
-        color_continuous_scale="Viridis",
-        labels={
-            "review_score": "Weighted Review Score",
-            "author": "",
-            "review_ratio": "Review:PR Ratio",
-        },
-    )
-    fig_reviews.update_layout(height=400, yaxis=dict(autorange="reversed"))
-    st.plotly_chart(fig_reviews, use_container_width=True)
-
-# -- Consistency + breadth --
-col3, col4 = st.columns(2)
-
-with col3:
-    st.subheader(f"Shipping Consistency ({total_weeks} weeks)")
-    top_consistent = author_stats.nlargest(15, "active_weeks")
-    fig_consist = px.bar(
-        top_consistent,
-        x="active_weeks",
-        y="author",
-        orientation="h",
-        labels={"active_weeks": "Weeks with ≥1 Merged PR", "author": ""},
-    )
-    fig_consist.update_layout(height=400, yaxis=dict(autorange="reversed"))
-    st.plotly_chart(fig_consist, use_container_width=True)
-
-with col4:
-    st.subheader("Codebase Breadth")
-    top_breadth = author_stats.nlargest(15, "dirs_touched")
-    fig_breadth = px.bar(
-        top_breadth,
-        x="dirs_touched",
-        y="author",
-        orientation="h",
-        color="sole_owned_files",
-        color_continuous_scale="Reds",
-        labels={
-            "dirs_touched": "Unique Top-Level Dirs Touched",
-            "author": "",
-            "sole_owned_files": "Sole-Owned Files",
-        },
-    )
-    fig_breadth.update_layout(height=400, yaxis=dict(autorange="reversed"))
-    st.plotly_chart(fig_breadth, use_container_width=True)
-
-# -- Additions vs Deletions --
-st.subheader("Code Additions vs Deletions (Top 15 by volume)")
-top_volume = author_stats.nlargest(15, "total_lines")
-add_del_df = top_volume[["author", "total_additions", "total_deletions"]].melt(
-    id_vars="author", var_name="type", value_name="lines",
-)
-add_del_df["type"] = add_del_df["type"].map({"total_additions": "Additions", "total_deletions": "Deletions"})
-fig_addel = px.bar(
-    add_del_df,
-    x="lines",
-    y="author",
-    color="type",
-    orientation="h",
-    color_discrete_map={"Additions": "#2ecc71", "Deletions": "#e74c3c"},
-    labels={"lines": "Lines", "author": "", "type": ""},
-)
-fig_addel.update_layout(height=400, yaxis=dict(autorange="reversed"), barmode="group")
-st.plotly_chart(fig_addel, use_container_width=True)
+st.plotly_chart(fig_radar, width='stretch')
 
 # -- Scoring methodology --
 with st.expander("📊 How is impact measured?"):
@@ -342,7 +246,7 @@ with st.expander("📊 How is impact measured?"):
 | Consistency | 15% | Distinct weeks with ≥1 merged PR (out of {total_weeks}) — reliable delivery |
 | Force Multiplier | 10% | Review-to-PR ratio — unblocking others relative to own output |
 
-Bus factor (sole-owned files) is shown but **not** scored — it's a risk signal, not necessarily positive.
+Bus factor (sole-owned files) is shown but **not** scored it's a risk signal
 """)
 
     st.dataframe(
@@ -370,5 +274,102 @@ Bus factor (sole-owned files) is shown but **not** scored — it's a risk signal
             "Review:PR Ratio": "{:.2f}",
             "Impact Score": "{:.3f}",
         }),
-        use_container_width=True,
+        width='stretch',
     )
+
+# -- Scatter: PRs vs log(lines changed) --
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("PRs vs Code Volume")
+    fig_scatter = px.scatter(
+        author_stats,
+        x="total_lines",
+        y="num_prs",
+        color="author",
+        hover_name="author",
+        hover_data={"weighted_volume": ":.1f", "total_lines": ":,"},
+        log_x=True,
+        labels={
+            "total_lines": "Lines Changed (log scale)",
+            "num_prs": "Merged PRs",
+        },
+    )
+    fig_scatter.update_layout(height=400, showlegend=False)
+    fig_scatter.update_traces(marker=dict(size=8))
+    st.plotly_chart(fig_scatter, width='stretch')
+
+# -- Review activity bar chart --
+with col2:
+    st.subheader("Review Activity (Top 15)")
+    top_reviewers = author_stats.nlargest(15, "review_score")
+    fig_reviews = px.bar(
+        top_reviewers,
+        x="review_score",
+        y="author",
+        orientation="h",
+        color="review_ratio",
+        color_continuous_scale="Viridis",
+        labels={
+            "review_score": "Weighted Review Score",
+            "author": "",
+            "review_ratio": "Review:PR Ratio",
+        },
+    )
+    fig_reviews.update_layout(height=400, yaxis=dict(autorange="reversed"))
+    st.plotly_chart(fig_reviews, width='stretch')
+
+# -- Consistency + breadth --
+col3, col4 = st.columns(2)
+
+with col3:
+    st.subheader(f"Shipping Consistency ({total_weeks} weeks)")
+    top_consistent = author_stats.nlargest(15, "active_weeks")
+    fig_consist = px.bar(
+        top_consistent,
+        x="active_weeks",
+        y="author",
+        orientation="h",
+        labels={"active_weeks": "Weeks with ≥1 Merged PR", "author": ""},
+    )
+    fig_consist.update_layout(height=400, yaxis=dict(autorange="reversed"))
+    st.plotly_chart(fig_consist, width='stretch')
+
+with col4:
+    st.subheader("Codebase Breadth")
+    top_breadth = author_stats.nlargest(15, "dirs_touched")
+    fig_breadth = px.bar(
+        top_breadth,
+        x="dirs_touched",
+        y="author",
+        orientation="h",
+        color="sole_owned_files",
+        color_continuous_scale="Reds",
+        labels={
+            "dirs_touched": "Unique Top-Level Dirs Touched",
+            "author": "",
+            "sole_owned_files": "Sole-Owned Files",
+        },
+    )
+    fig_breadth.update_layout(height=400, yaxis=dict(autorange="reversed"))
+    st.plotly_chart(fig_breadth, width='stretch')
+
+# -- Additions vs Deletions --
+st.subheader("Code Additions vs Deletions (Top 15 by volume)")
+top_volume = author_stats.nlargest(15, "total_lines")
+add_del_df = top_volume[["author", "total_additions", "total_deletions"]].melt(
+    id_vars="author", var_name="type", value_name="lines",
+)
+add_del_df["type"] = add_del_df["type"].map({"total_additions": "Additions", "total_deletions": "Deletions"})
+fig_addel = px.bar(
+    add_del_df,
+    x="lines",
+    y="author",
+    color="type",
+    orientation="h",
+    color_discrete_map={"Additions": "#2ecc71", "Deletions": "#e74c3c"},
+    labels={"lines": "Lines", "author": "", "type": ""},
+)
+fig_addel.update_layout(height=400, yaxis=dict(autorange="reversed"), barmode="group")
+st.plotly_chart(fig_addel, width='stretch')
+
